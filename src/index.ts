@@ -8,6 +8,7 @@ import color from 'colors-cli';
 import { OptimizeOptions } from 'svgo';
 import { generateIconsSource, generateReactIcons } from './generate';
 import { createSVG, createTTF, createEOT, createWOFF, createWOFF2, createSvgSymbol, copyTemplate, CSSOptions, createHTML, createTypescript, TypescriptOptions } from './utils';
+import { generateJsonNames } from './exportNames';
 
 export type SvgToFontOptions = {
   /**
@@ -159,6 +160,7 @@ export type SvgToFontOptions = {
 }
 
 export default async (options: SvgToFontOptions = {}) => {
+  const icons: string[] = [];
   const confPath = path.join(process.cwd(), '.svgtofontrc');
   if (fs.pathExistsSync(confPath)) {
     const conf = await fs.readJson(confPath);
@@ -206,6 +208,7 @@ export default async (options: SvgToFontOptions = {}) => {
     const prefix = options.classNamePrefix || options.fontName;
 
     Object.keys(unicodeObject).forEach(name => {
+      icons.push(name);
       const _code = unicodeObject[name];
       let symbolName = options.classNamePrefix + options.symbolNameDelimiter + name
       let iconPart = symbolName + '">';
@@ -231,6 +234,8 @@ export default async (options: SvgToFontOptions = {}) => {
         </li>
       `);
     });
+
+    generateJsonNames(icons);
 
     const ttf = await createTTF(options);
     await createEOT(options, ttf);
